@@ -10,9 +10,9 @@ struct Users{
     Users *Next;
 };
 int entry();
-void add_new_user();
 int ADMIN();
-
+void add_new_user();
+void delete_user();
 int main(){
     int ID=-1;
     for(int i=0 ;ID==-1;i++) {
@@ -97,17 +97,18 @@ int entry(){
 int ADMIN(){
     int menu=0;
     while(menu==0){
-        cout<<"1)Add new user.\n2)Exit.";
+        cout<<"1)Add new user.\n2)Delete User.\n3)Exit.\n";
         cin>>menu;
         switch (menu) {
             case 1 : add_new_user();menu=0;break;
-            case 2 : menu = -1;
+            case 2 : delete_user();menu=0;break;
+            case 3 : menu = -1;
         }
     }
 }
 
 void add_new_user(){
-    Users *Head;
+    Users *Head = nullptr;
     Users *curr;
     ifstream Iusers("/Users/largexim/Documents/Golestan/files/Users.txt");
     while(!Iusers.eof()){
@@ -117,19 +118,53 @@ void add_new_user(){
         Head = curr;
     }
     Iusers.close();
+    int id=-1;
+    string test;
     curr = new struct Users;
-    cout<<"enter User's ID _ 0.Admin _ 1.Teacher _ 2.Student :";
-    cin>>curr->ID;
+    while(id>2 || id<0) {
+        cout << "enter User's ID _ 0 for Admin _ 1 for Teacher _ 2 for Student : ";
+        cin >> id;
+        if (-1 < id && id < 3) {
+            curr->ID = id;
+        } else {
+            cout << "NOT valid Try again!\n";
+        }
+    }
     cout<<"Enter User's Firstname : ";
     cin>>curr->First_Name;
     cout<<"Enter User's Lastname : ";
     cin>>curr->Last_Name;
-    cout<<"Enter User's USER_ID : ";
-    cin>>curr->User_ID;
-    cout<<"Enter User's Password : ";
-    cin>>curr->Password;
-    curr->Next = Head;
-    Head = curr;
+    while(true) {
+        int i=0;
+        cout << "Enter User's USER_ID : ";
+        cin >> test;
+        while(test[i]){
+            i++;
+        }
+        if(i<10||i>10){
+            cout<<"USER_ID most have 10 character, Try again!\n";
+        }
+        else if(i==10){
+            bool x = true;
+            Users * temp = Head;
+            while(temp != nullptr){
+                if(test == temp->User_ID) {
+                    cout <<"This USER_ID exist Try another one.\n";
+                    x = false;
+                    break;
+                }
+                temp = temp->Next;
+            }
+            if(x) {
+                curr->User_ID = test;
+                break;
+            }
+        }
+    }
+        cout << "Enter User's Password : ";
+        cin >> curr->Password;
+        curr->Next = Head;
+        Head = curr;
 
     ofstream Ousers("/Users/largexim/Documents/Golestan/files/Users.txt");
     while(curr!= nullptr){
@@ -145,7 +180,74 @@ void add_new_user(){
         Head = curr;
     }
     Head = nullptr;
-    cout<<"Done.";
+    cout<<"Done.\n";
+}
+void delete_user(){
+    string test;
+    Users *Head = nullptr;
+    Users *curr;
+    ifstream users("/Users/largexim/Documents/Golestan/files/Users.txt");
+    while(!users.eof()){
+        curr = new struct Users;
+        users>>curr->ID>>curr->First_Name>>curr->Last_Name>>curr->User_ID>>curr->Password;
+        curr->Next = Head;
+        Head = curr;
+    }
+    users.close();
+    bool i = false;
+    while(i==false) {
+        cout << "Enter User's USER_ID : ";
+        cin >> test;
+        curr = Head;
+        while (curr != nullptr) {
+            if (test == curr->User_ID) {
+                i = true;
+                break;
+                }
+                curr = curr->Next;
+            }
+        if(i==false){
+            cout<<"USER_ID does not exist try again.\n";
+        }
+    }
+
+    while(true){
+        cout<<"USER_ID : "<<curr->User_ID<<endl<<"First name : "<<curr->First_Name<<endl;
+        cout<<"Last name : "<<curr->Last_Name<<endl;
+        cout<<"Delete this user :\n1.Yes\n2.No\n";
+        int x = 2;
+        cin>>x;
+        if(x==2){
+            cout<<"OK.\n";
+            break;
+        }
+        else if(x==1){
+            Users * temp = curr;
+            Users *pre = Head;
+            while(pre->Next!=temp) {
+                pre = pre->Next;
+            }
+            pre->Next = temp->Next;
+            delete temp;
+            cout<<"Done. USER_ID : "<<test<<" Deleted.\n";
+            break;
+        }
+    }
+
+    curr = Head;
+    ofstream Ousers("/Users/largexim/Documents/Golestan/files/Users.txt");
+    while(curr!= nullptr){
+        Ousers<<curr->ID<<" "<<curr->First_Name<<" "<<curr->Last_Name<<" "<<curr->User_ID<<" "<<curr->Password;
+        curr = curr->Next;
+        if(curr!= nullptr)
+            Ousers<<endl;
+    }
+    while(Head!= nullptr){
+        curr = Head->Next;
+        delete Head;
+        Head = curr;
+    }
+    Head = nullptr;
 }
 
 
