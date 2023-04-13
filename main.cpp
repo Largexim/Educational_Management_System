@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
-struct Lesson{
+struct Lessons{
     string Lesson_Name;
     int Lesson_ID{};
-    Lesson *Next{};
+    Lessons *Next{};
 };
 struct Users{
     int ID{};
@@ -14,12 +14,19 @@ struct Users{
     string Password;
     Users *Next{};
 };
+struct Teachers{
+    string First_Name;
+    string Last_Name;
+    string Teacher_ID;
+    Teachers *Next{};
+};
 int entry();
 void ADMIN();
 void add_new_user();
 void delete_user();
 void change_password();
 void add_new_lesson();
+void add_new_teacher();
 int main(){
     int ID=-1;
     for(int i=0 ;ID==-1;i++) {
@@ -105,14 +112,15 @@ int entry(){
 void ADMIN(){
     int menu=0;
     while(menu==0){
-        cout<<"1)Add new user.\n2)Delete User.\n3)Change User Password.\n4)Add new Lesson.\n5)Exit.\n";
+        cout<<"1)Add new user.\n2)Delete User.\n3)Change User Password.\n4)Add new Lesson.\n5)Add new Teacher.\n6)Exit.\n";
         cin>>menu;
         switch (menu) {
             case 1 : add_new_user();menu=0;break;
             case 2 : delete_user();menu=0;break;
             case 3 : change_password();menu=0;break;
             case 4 : add_new_lesson();menu=0;break;
-            case 5 : menu = -1;
+            case 5 : add_new_teacher();menu=0;break;
+            case 6 : menu = -1;
             default : ;
         }
     }
@@ -343,23 +351,23 @@ void change_password(){
 }
 
 void add_new_lesson(){
-    Lesson *Head = nullptr;
-    Lesson *curr;
+    Lessons *Head = nullptr;
+    Lessons *curr;
 
     ifstream lesson("/Users/largexim/Documents/Golestan/files/lessons.txt");
     while(!lesson.eof()){
-        curr = new struct Lesson;
+        curr = new struct Lessons;
         lesson>>curr->Lesson_Name>>curr->Lesson_ID;
         curr->Next = Head;
         Head = curr;
     }
     lesson.close();
 
-    Lesson *ID_creator = Head;
+    Lessons *ID_creator = Head;
     while(ID_creator->Next!= nullptr) {
         ID_creator = ID_creator->Next;
     }
-    curr = new struct Lesson;
+    curr = new struct Lessons;
     cout<<"Enter Lesson Name : ";
     cin>>curr->Lesson_Name;
     curr->Lesson_ID = (ID_creator->Lesson_ID)+1;
@@ -386,5 +394,75 @@ void add_new_lesson(){
     }
 }
 
+void add_new_teacher(){
+    Teachers *THead = nullptr;
+    Teachers *Tcurr;
+    string test;
 
+    Users *Head = nullptr;
+    Users *curr;
+    ifstream Iusers("/Users/largexim/Documents/Golestan/files/Users.txt");
+    while(!Iusers.eof()){
+        curr = new struct Users;
+        Iusers>>curr->ID>>curr->First_Name>>curr->Last_Name>>curr->User_ID>>curr->Password;
+        curr->Next = Head;
+        Head = curr;
+    }
+    Iusers.close();
 
+    ifstream Teachers("/Users/largexim/Documents/Golestan/files/Teachers.txt");
+    while(!Teachers.eof()){
+        Tcurr = new struct Teachers;
+        Teachers>>Tcurr->First_Name>>Tcurr->Last_Name>>Tcurr->Teacher_ID;
+        Tcurr->Next = THead;
+        THead = Tcurr;
+    }
+    Teachers.close();
+
+    bool x = false;
+    cout<<"Enter Teacher's ID : ";
+    cin>>test;
+    while(!x) {
+        while (curr != nullptr) {
+            if (curr->User_ID == test) {
+                Tcurr = new struct Teachers;
+                Tcurr->First_Name = curr->First_Name;
+                Tcurr->Last_Name = curr->Last_Name;
+                Tcurr->Teacher_ID = curr->User_ID;
+                Tcurr->Next = THead;
+                THead = Tcurr;
+                x = true;
+                break;
+            } else {
+                curr = curr->Next;
+            }
+        }
+        if (!x) {
+            cout << "ID not found!!\n";
+        }
+    }
+    if(x){
+        cout<<"Done.\n";
+    }
+    ofstream oTeachers("/Users/largexim/Documents/Golestan/files/Teachers.txt");
+    Tcurr = THead;
+    while(Tcurr!= nullptr){
+        oTeachers<<Tcurr->First_Name<<" "<<Tcurr->Last_Name<<" "<<Tcurr->Teacher_ID;
+        Tcurr = Tcurr->Next;
+        if(Tcurr!= nullptr) {
+            oTeachers << endl;
+        }
+    }
+
+    while(Head!= nullptr){
+        curr = Head->Next;
+        delete Head;
+        Head = curr;
+    }
+
+    while(THead!= nullptr){
+        Tcurr = THead->Next;
+        delete THead;
+        THead = Tcurr;
+    }
+}
