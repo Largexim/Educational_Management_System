@@ -2,17 +2,18 @@
 #include <fstream>
 using namespace std;
 struct Users{
-    int ID;
+    int ID{};
     string First_Name;
     string Last_Name;
     string User_ID;
     string Password;
-    Users *Next;
+    Users *Next{};
 };
 int entry();
-int ADMIN();
+void ADMIN();
 void add_new_user();
 void delete_user();
+void change_password();
 int main(){
     int ID=-1;
     for(int i=0 ;ID==-1;i++) {
@@ -26,6 +27,7 @@ int main(){
         case 0 : ADMIN();break;
         case 1 : cout<<"you are teacher.";break;
         case 2 : cout<<"you are student.";break;
+        default : ;
     }
 }
 int entry(){
@@ -94,15 +96,17 @@ int entry(){
     Head = nullptr;
     return x;
 }
-int ADMIN(){
+void ADMIN(){
     int menu=0;
     while(menu==0){
-        cout<<"1)Add new user.\n2)Delete User.\n3)Exit.\n";
+        cout<<"1)Add new user.\n2)Delete User.\n3)Change User Password.\n4)Exit.\n";
         cin>>menu;
         switch (menu) {
             case 1 : add_new_user();menu=0;break;
             case 2 : delete_user();menu=0;break;
-            case 3 : menu = -1;
+            case 3 : change_password();menu=0;break;
+            case 4 : menu = -1;
+            default : ;
         }
     }
 }
@@ -195,7 +199,7 @@ void delete_user(){
     }
     users.close();
     bool i = false;
-    while(i==false) {
+    while(!i) {
         cout << "Enter User's USER_ID : ";
         cin >> test;
         curr = Head;
@@ -206,7 +210,7 @@ void delete_user(){
                 }
                 curr = curr->Next;
             }
-        if(i==false){
+        if(!i){
             cout<<"USER_ID does not exist try again.\n";
         }
     }
@@ -231,6 +235,85 @@ void delete_user(){
             delete temp;
             cout<<"Done. USER_ID : "<<test<<" Deleted.\n";
             break;
+        }
+    }
+
+    curr = Head;
+    ofstream Ousers("/Users/largexim/Documents/Golestan/files/Users.txt");
+    while(curr!= nullptr){
+        Ousers<<curr->ID<<" "<<curr->First_Name<<" "<<curr->Last_Name<<" "<<curr->User_ID<<" "<<curr->Password;
+        curr = curr->Next;
+        if(curr!= nullptr)
+            Ousers<<endl;
+    }
+    while(Head!= nullptr){
+        curr = Head->Next;
+        delete Head;
+        Head = curr;
+    }
+    Head = nullptr;
+}
+void change_password(){
+    string test;
+    Users *Head = nullptr;
+    Users *curr;
+    ifstream users("/Users/largexim/Documents/Golestan/files/Users.txt");
+    while(!users.eof()){
+        curr = new struct Users;
+        users>>curr->ID>>curr->First_Name>>curr->Last_Name>>curr->User_ID>>curr->Password;
+        curr->Next = Head;
+        Head = curr;
+    }
+    users.close();
+    bool i = false;
+    while(!i) {
+        cout << "Enter User's USER_ID : ";
+        cin >> test;
+        curr = Head;
+        while (curr != nullptr) {
+            if (test == curr->User_ID) {
+                i = true;
+                break;
+            }
+            curr = curr->Next;
+        }
+        if(!i){
+            cout<<"USER_ID does not exist try again.\n";
+        }
+    }
+    bool z = true;
+    while(z){
+        cout<<"USER_ID : "<<curr->User_ID<<endl<<"First name : "<<curr->First_Name<<endl;
+        cout<<"Last name : "<<curr->Last_Name<<endl;
+        cout<<"Change the Password :\n1.Yes\n2.No\n";
+        int x = 2;
+        cin>>x;
+        if(x==2){
+            cout<<"OK.\n";
+            break;
+        }
+        else if(x==1){
+            while(z) {
+                string password1;
+                string password2;
+                cout << "Enter the new Password : ";
+                cin >> password1;
+                cout << "Repeat the new Password : ";
+                cin >> password2;
+                if (password1 != password2) {
+                    cout << "Passwords does not Mached!! try again.\n";
+                }
+                else{
+                    if(password1==curr->Password){
+                        cout<<"This password is the same as the current one, try another one.\n";
+                    }
+                    else {
+                        curr->Password = password1;
+                        cout << "Done.\n";
+                        z = false;
+                    }
+                }
+            }
         }
     }
 
