@@ -1,6 +1,11 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
+struct Lesson{
+    string Lesson_Name;
+    int Lesson_ID{};
+    Lesson *Next{};
+};
 struct Users{
     int ID{};
     string First_Name;
@@ -14,6 +19,7 @@ void ADMIN();
 void add_new_user();
 void delete_user();
 void change_password();
+void add_new_lesson();
 int main(){
     int ID=-1;
     for(int i=0 ;ID==-1;i++) {
@@ -99,13 +105,14 @@ int entry(){
 void ADMIN(){
     int menu=0;
     while(menu==0){
-        cout<<"1)Add new user.\n2)Delete User.\n3)Change User Password.\n4)Exit.\n";
+        cout<<"1)Add new user.\n2)Delete User.\n3)Change User Password.\n4)Add new Lesson.\n5)Exit.\n";
         cin>>menu;
         switch (menu) {
             case 1 : add_new_user();menu=0;break;
             case 2 : delete_user();menu=0;break;
             case 3 : change_password();menu=0;break;
-            case 4 : menu = -1;
+            case 4 : add_new_lesson();menu=0;break;
+            case 5 : menu = -1;
             default : ;
         }
     }
@@ -186,6 +193,7 @@ void add_new_user(){
     Head = nullptr;
     cout<<"Done.\n";
 }
+
 void delete_user(){
     string test;
     Users *Head = nullptr;
@@ -253,6 +261,7 @@ void delete_user(){
     }
     Head = nullptr;
 }
+
 void change_password(){
     string test;
     Users *Head = nullptr;
@@ -331,6 +340,50 @@ void change_password(){
         Head = curr;
     }
     Head = nullptr;
+}
+
+void add_new_lesson(){
+    Lesson *Head = nullptr;
+    Lesson *curr;
+
+    ifstream lesson("/Users/largexim/Documents/Golestan/files/lessons.txt");
+    while(!lesson.eof()){
+        curr = new struct Lesson;
+        lesson>>curr->Lesson_Name>>curr->Lesson_ID;
+        curr->Next = Head;
+        Head = curr;
+    }
+    lesson.close();
+
+    Lesson *ID_creator = Head;
+    while(ID_creator->Next!= nullptr) {
+        ID_creator = ID_creator->Next;
+    }
+    curr = new struct Lesson;
+    cout<<"Enter Lesson Name : ";
+    cin>>curr->Lesson_Name;
+    curr->Lesson_ID = (ID_creator->Lesson_ID)+1;
+    curr->Next = Head;
+    Head = curr;
+
+    cout<<"Done. Lesson Added.\n";
+    cout<<"Lesson Name : "<<curr->Lesson_Name<<"\nLesson ID : "<<curr->Lesson_ID<<endl;
+
+    curr = Head;
+    ofstream olesson("/Users/largexim/Documents/Golestan/files/lessons.txt");
+    while(curr!= nullptr){
+        olesson<<curr->Lesson_Name<<" "<<curr->Lesson_ID;
+        curr = curr->Next;
+        if(curr!= nullptr)
+            olesson<<endl;
+    }
+    olesson.close();
+
+    while(Head!= nullptr){
+        curr = Head->Next;
+        delete Head;
+        Head = curr;
+    }
 }
 
 
