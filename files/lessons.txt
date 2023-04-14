@@ -1,6 +1,6 @@
-ITP2 1005
+Mathmatic2 1005
 ITP 1003
-Mathmatic1 1001
-AP 1000
-Mathmatic2 1002
-BP 1004
+AP 1001
+BP 1000
+ITP 1002
+Mathmatic1 1004

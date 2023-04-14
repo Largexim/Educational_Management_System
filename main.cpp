@@ -20,6 +20,24 @@ struct Teachers{
     string Teacher_ID;
     Teachers *Next{};
 };
+struct Students{
+    string First_Name;
+    string Last_Name;
+    string Student_ID;
+    float Mark{};
+    Students *Next{};
+};
+struct Lesson{
+    string T_First_Name;
+    string T_Last_Name;
+    string Teacher_ID;
+    Students *S;
+};
+struct TL{
+    string Teacher_ID;
+    Lessons *Lessons;
+    TL *Next;
+};
 int entry();
 void ADMIN();
 void add_new_user();
@@ -27,6 +45,10 @@ void delete_user();
 void change_password();
 void add_new_lesson();
 void add_new_teacher();
+void add_new_student();
+void add_lesson_to_teacher(string);
+void add_to_tl(string , string);
+bool ID_check(string);
 int main(){
     int ID=-1;
     for(int i=0 ;ID==-1;i++) {
@@ -112,7 +134,8 @@ int entry(){
 void ADMIN(){
     int menu=0;
     while(menu==0){
-        cout<<"1)Add new user.\n2)Delete User.\n3)Change User Password.\n4)Add new Lesson.\n5)Add new Teacher.\n6)Exit.\n";
+        cout<<"1)Add new user.\t2)Delete User.\n3)Change User Password.\t4)Add new Lesson.\n5)Add new Teacher.\t";
+        cout<<"6)Add new Student.\n7)Exit.";
         cin>>menu;
         switch (menu) {
             case 1 : add_new_user();menu=0;break;
@@ -120,7 +143,8 @@ void ADMIN(){
             case 3 : change_password();menu=0;break;
             case 4 : add_new_lesson();menu=0;break;
             case 5 : add_new_teacher();menu=0;break;
-            case 6 : menu = -1;
+            case 6 : add_new_student();menu=0;break;
+            case 7 : menu = -1;
             default : ;
         }
     }
@@ -370,12 +394,14 @@ void add_new_lesson(){
     curr = new struct Lessons;
     cout<<"Enter Lesson Name : ";
     cin>>curr->Lesson_Name;
-    curr->Lesson_ID = (ID_creator->Lesson_ID)+1;
-    curr->Next = Head;
-    Head = curr;
+        curr->Lesson_ID = (ID_creator->Lesson_ID) + 1;
+        curr->Next = Head;
+        Head = curr;
 
     cout<<"Done. Lesson Added.\n";
     cout<<"Lesson Name : "<<curr->Lesson_Name<<"\nLesson ID : "<<curr->Lesson_ID<<endl;
+
+    add_lesson_to_teacher(curr->Lesson_Name);
 
     curr = Head;
     ofstream olesson("/Users/largexim/Documents/Golestan/files/lessons.txt");
@@ -465,4 +491,225 @@ void add_new_teacher(){
         delete THead;
         THead = Tcurr;
     }
+}
+
+void add_new_student(){
+    Students *SHead = nullptr;
+    Students *Scurr;
+    string test;
+
+    Users *Head = nullptr;
+    Users *curr;
+    ifstream users("/Users/largexim/Documents/Golestan/files/Users.txt");
+    while(!users.eof()){
+        curr = new struct Users;
+        users>>curr->ID>>curr->First_Name>>curr->Last_Name>>curr->User_ID>>curr->Password;
+        curr->Next = Head;
+        Head = curr;
+    }
+    users.close();
+
+    ifstream Teachers("/Users/largexim/Documents/Golestan/files/Students.txt");
+    while(!Teachers.eof()){
+        Scurr = new struct Students;
+        Teachers>>Scurr->First_Name>>Scurr->Last_Name>>Scurr->Student_ID;
+        Scurr->Next = SHead;
+        SHead = Scurr;
+    }
+    Teachers.close();
+
+    bool x = false;
+    cout<<"Enter Student's ID : ";
+    cin>>test;
+    while(!x) {
+        while (curr != nullptr) {
+            if (curr->User_ID == test ) {
+                Scurr = new struct Students;
+                Scurr->First_Name = curr->First_Name;
+                Scurr->Last_Name = curr->Last_Name;
+                Scurr->Student_ID = curr->User_ID;
+                Scurr->Next = SHead;
+                SHead = Scurr;
+                x = true;
+                break;
+            } else {
+                curr = curr->Next;
+            }
+        }
+        if (!x) {
+            cout << "ID not found!!\n";
+        }
+    }
+    if(x){
+        cout<<"Done.\n";
+    }
+    ofstream oTeachers("/Users/largexim/Documents/Golestan/files/Students.txt");
+    Scurr = SHead;
+    while(Scurr!= nullptr){
+        oTeachers<<Scurr->First_Name<<" "<<Scurr->Last_Name<<" "<<Scurr->Student_ID;
+        Scurr = Scurr->Next;
+        if(Scurr!= nullptr) {
+            oTeachers << endl;
+        }
+    }
+
+    while(Head!= nullptr){
+        curr = Head->Next;
+        delete Head;
+        Head = curr;
+    }
+
+    while(SHead!= nullptr){
+        Scurr = SHead->Next;
+        delete SHead;
+        SHead = Scurr;
+    }
+
+}
+
+void add_lesson_to_teacher(string lname){
+    Teachers *THead = nullptr;
+    Teachers *Tcurr;
+    string test;
+
+    Lesson *Head = nullptr;
+    Lesson *curr;
+
+    ifstream Teachers("/Users/largexim/Documents/Golestan/files/Teachers.txt");
+    while(!Teachers.eof()){
+        Tcurr = new struct Teachers;
+        Teachers>>Tcurr->First_Name>>Tcurr->Last_Name>>Tcurr->Teacher_ID;
+        Tcurr->Next = THead;
+        THead = Tcurr;
+    }
+    Teachers.close();
+
+    bool x = false;
+    cout<<"Enter Teacher's ID : ";
+    cin>>test;
+    while(!x) {
+        while (Tcurr != nullptr) {
+            if (Tcurr->Teacher_ID == test) {
+                x = true;
+                break;
+            } else {
+                Tcurr = Tcurr->Next;
+            }
+        }
+        if (!x) {
+            cout << "ID not found!!\n";
+        }
+    }
+    if(x){
+        curr = new struct Lesson;
+        curr->T_First_Name = Tcurr->First_Name;
+        curr->T_Last_Name = Tcurr->Last_Name;
+        curr->Teacher_ID = Tcurr->Teacher_ID;
+        curr->S = nullptr;
+        cout<<"Done.\n";
+    }
+
+    add_to_tl(curr->Teacher_ID ,lname);
+
+    ofstream Lesson("/Users/largexim/Documents/Golestan/files/"+lname+".txt");
+    Lesson<<curr->T_First_Name<<" "<<curr->T_Last_Name<<" "<<curr->Teacher_ID<<endl;
+    Lesson.close();
+
+    delete Head;
+
+    while(THead!= nullptr){
+        Tcurr = THead->Next;
+        delete THead;
+        THead = Tcurr;
+    }
+
+}
+
+void add_to_tl(string teacher , string lname){
+    int m;
+    TL *Head = nullptr;
+    TL *curr;
+    Lessons *Lcurr;
+    string test;
+
+    ifstream TL("/Users/largexim/Documents/Golestan/files/TL.txt");
+            while (!TL.eof()) {
+                TL>>test;
+                if(ID_check(test)){
+                    curr = new struct TL;
+                    curr->Lessons = nullptr;
+                    curr->Teacher_ID = test;
+                    curr->Next = Head;
+                    Head = curr;
+                }
+                else {
+                    Lcurr = new struct Lessons;
+                    Lcurr->Lesson_Name = test;
+                    Lcurr->Next = curr->Lessons;
+                    curr->Lessons = Lcurr;
+                }
+            }
+    TL.close();
+
+    bool x = false;
+    curr = Head;
+    while(curr!= nullptr){
+        if(curr->Teacher_ID == teacher){
+            Lcurr = new struct Lessons;
+            Lcurr->Lesson_Name = lname;
+            Lcurr->Next = curr->Lessons;
+            curr->Lessons = Lcurr;
+            x = true;
+            break;
+        }
+        curr = curr->Next;
+    }
+
+    if(!x){
+        curr = new struct TL;
+        curr->Teacher_ID = teacher;
+        curr->Lessons = nullptr;
+        Lcurr = new struct Lessons;
+        Lcurr->Lesson_Name = lname;
+        Lcurr->Next = curr->Lessons;
+        curr->Lessons = Lcurr;
+        curr->Next = Head;
+        Head = curr;
+    }
+
+        curr = Head;
+        ofstream oTL("/Users/largexim/Documents/Golestan/files/TL.txt");
+    while(curr!= nullptr){
+        Lcurr = curr->Lessons;
+        oTL<<curr->Teacher_ID<<" ";
+        while(Lcurr!= nullptr){
+            oTL<<Lcurr->Lesson_Name;
+            Lcurr = Lcurr->Next;
+            if(Lcurr!= nullptr){
+                oTL<<" ";
+            }
+        }
+        curr = curr->Next;
+        if(curr!= nullptr){
+            oTL<<endl;
+        }
+    }
+
+    cout<<"TL File Updated.\n";
+}
+
+bool ID_check(string ID){
+    bool x = false;
+    int j = 0;
+    int i;
+    for( i=0 ; i<10 ; i++){
+        if('0'<=ID[i] && ID[i]<='9'){
+            j++;
+        }
+    }
+    if(i==j){
+        x = true;
+    }
+
+    return x;
 }
